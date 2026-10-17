@@ -1,0 +1,42 @@
+version: "3.9"
+
+# ── F1 Telemetry — Single-node Cassandra (development) ──
+#
+# STARTUP TIME: 30–90 seconds on first launch.
+# Wait for the health-check to pass before running schema or ingestion.
+#
+# USAGE:
+#   docker compose up -d          # start
+#   docker compose ps             # confirm healthy
+#   docker compose down -v        # stop and wipe data
+
+services:
+  cassandra:
+    image: cassandra:4.1
+    container_name: f1_cassandra
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:9042:9042"   # bind only to loopback — not exposed to network
+    environment:
+      CASSANDRA_CLUSTER_NAME: "F1TelemetryCluster"
+      CASSANDRA_DC:            "datacenter1"
+      CASSANDRA_RACK:          "rack1"
+      MAX_HEAP_SIZE:           "${MAX_HEAP_SIZE:-1G}"
+      HEAP_NEWSIZE:            "${HEAP_NEWSIZE:-256M}"
+      # Disable token auto-generation for single-node; all data on one node
+      CASSANDRA_NUM_TOKENS:    "1"
+    volumes:
+      - cassandra_data:/var/lib/cassandra
+    healthcheck:
+      test:
+        - "CMD-SHELL"
+        - |
+          cqlsh -e "describe keyspaces" 2>/dev/null || exit 1
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 60s   # Cassandra takes 30–90 s to start; give it breathing room
+
+volumes:
+  cassandra_data:
+    name: f1_cassandra_data

@@ -295,11 +295,12 @@
 <!-- Chart.js CDN (pinned to v4.x) -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 
-<!-- Dashboard JS (loaded in Phase 4) -->
+<!-- Dashboard JS -->
+<script type="module" src="js/dashboard.js"></script>
 <script type="module">
-  // Placeholder clock until dashboard.js is wired up in Phase 4
   const clock = document.getElementById('topbar-clock');
   function tickClock() {
+    if (!clock) return;
     const now = new Date();
     clock.textContent = now.toLocaleTimeString('en-GB', { hour12: false });
     clock.setAttribute('datetime', now.toISOString());

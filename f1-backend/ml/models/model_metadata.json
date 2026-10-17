@@ -1,0 +1,47 @@
+{
+  "model_name": "XGBoost Pit Stop Classifier",
+  "version": "1.0.0",
+  "trained_at": "2026-10-17T11:20:04.882688+00:00",
+  "features": [
+    "tire_wear_pct",
+    "tire_temp_c",
+    "brake_temp_c",
+    "speed_kmh",
+    "rpm",
+    "throttle_pct",
+    "g_force_lat_abs",
+    "tire_wear_rate",
+    "tyre_age_laps",
+    "lap_number"
+  ],
+  "metrics": {
+    "accuracy": 0.9996,
+    "precision": 1.0,
+    "recall": 0.9987,
+    "f1": 0.9993,
+    "roc_auc": 1.0
+  },
+  "comparison": {
+    "LogisticRegression": {
+      "accuracy": 0.9988,
+      "precision": 1.0,
+      "recall": 0.996,
+      "f1": 0.998,
+      "roc_auc": 1.0
+    },
+    "RandomForest": {
+      "accuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "roc_auc": 1.0
+    },
+    "XGBoost": {
+      "accuracy": 0.9996,
+      "precision": 1.0,
+      "recall": 0.9987,
+      "f1": 0.9993,
+      "roc_auc": 1.0
+    }
+  }
+}

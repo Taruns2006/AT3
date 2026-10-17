@@ -1,0 +1,82 @@
+name: CI — Lint and Unit Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      - name: Install dependencies
+        working-directory: f1-backend
+        run: pip install -r requirements.txt
+
+      - name: Lint with ruff
+        working-directory: f1-backend
+        run: ruff check .
+
+      - name: Run unit tests (no Cassandra required)
+        working-directory: f1-backend
+        run: |
+          pytest tests/ \
+            -v \
+            -m "not cassandra" \
+            --tb=short \
+            --timeout=60
+        env:
+          # Provide dummy env vars so modules that import dotenv don't crash
+          CASSANDRA_HOSTS: "127.0.0.1"
+          CASSANDRA_PORT: "9042"
+          KEYSPACE: "f1_telemetry"
+          API_PORT: "8000"
+          LOG_LEVEL: "WARNING"
+
+  # Optional job: only runs when a Cassandra service is available
+  # This job is manually triggered or runs in environments with Docker
+  integration-test:
+    runs-on: ubuntu-latest
+    if: false  # Set to true when you have a Cassandra service in CI
+
+    services:
+      cassandra:
+        image: cassandra:4.1
+        ports:
+          - 9042:9042
+        options: >-
+          --health-cmd "cqlsh -e 'describe keyspaces'"
+          --health-interval 30s
+          --health-timeout 10s
+          --health-retries 10
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+      - name: Install
+        working-directory: f1-backend
+        run: pip install -r requirements.txt
+      - name: Apply schema
+        working-directory: f1-backend
+        run: python manage.py schema
+      - name: Run Cassandra tests
+        working-directory: f1-backend
+        run: pytest tests/ -v -m "cassandra" --tb=short

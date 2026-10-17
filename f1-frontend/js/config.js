@@ -19,7 +19,7 @@ export const WS_BASE = 'ws://localhost:8000';
  * true  → all data comes from mock.js (no network calls)
  * false → all data comes from the real backend
  */
-export const USE_MOCK = true;
+export const USE_MOCK = false;
 
 /** How many seconds of history to fetch for rolling charts */
 export const HISTORY_SECONDS = 60;
