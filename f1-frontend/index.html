@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- ── SEO ─────────────────────────────────────────────── -->
+  <title>F1 Telemetry — Real-Time Pit Stop Prediction Platform</title>
+  <meta name="description"
+        content="Experience Formula 1 like never before. 20 Hz live sensor telemetry, ML-powered pit stop predictions, and a real-time race dashboard built for the data-driven era of motorsport."/>
+  <meta name="keywords"     content="F1 telemetry, pit stop prediction, Formula 1, real-time, machine learning, motorsport data"/>
+  <meta name="author"       content="F1 Telemetry Team"/>
+  <meta name="theme-color"  content="#0e0e0f"/>
+
+  <!-- Open Graph -->
+  <meta property="og:title"       content="F1 Telemetry — Real-Time Pit Stop Prediction"/>
+  <meta property="og:description" content="20 Hz live sensor telemetry and ML-powered pit stop predictions."/>
+  <meta property="og:type"        content="website"/>
+
+  <!-- ── Preload critical font ───────────────────────────── -->
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,300;1,400&display=swap"
+        rel="stylesheet"/>
+
+  <!-- ── CSS ─────────────────────────────────────────────── -->
+  <link rel="stylesheet" href="css/variables.css"/>
+  <link rel="stylesheet" href="css/base.css"/>
+  <link rel="stylesheet" href="css/components.css"/>
+  <link rel="stylesheet" href="css/landing.css"/>
+
+  <style>
+    /* Inline critical above-the-fold styles to avoid FOUC */
+    body { background: #0e0e0f; }
+  </style>
+</head>
+
+<body class="landing">
+
+<!-- ── Toast container (global) ────────────────────────── -->
+<div id="toast-container" aria-live="polite" aria-atomic="false"></div>
+
+<!-- ════════════════════════════════════════════════════════
+     NAVBAR
+     ════════════════════════════════════════════════════════ -->
+<header id="navbar" class="navbar" role="banner">
+  <div class="navbar__inner">
+
+    <!-- Logo -->
+    <a href="/" class="navbar__logo" aria-label="F1 Telemetry home">
+      <img src="assets/logo.svg" alt="F1T logo mark" class="navbar__logo-mark" width="36" height="36"/>
+      <span class="navbar__brand">F1<span>T</span>elemetry</span>
+    </a>
+
+    <!-- Center links (desktop) -->
+    <nav class="navbar__links" role="navigation" aria-label="Primary navigation">
+      <a href="#home"         class="navbar__link active" id="nav-home">HOME</a>
+      <a href="#architecture" class="navbar__link"        id="nav-info">INFO</a>
+      <a href="#team"         class="navbar__link"        id="nav-support">SUPPORT</a>
+      <a href="#team"         class="navbar__link"        id="nav-partnership">PARTNERSHIP</a>
+      <a href="dashboard.html" class="navbar__link"       id="nav-product">PRODUCT</a>
+    </nav>
+
+    <!-- Right actions -->
+    <div class="navbar__actions">
+      <a href="dashboard.html" class="btn btn--outline" id="nav-join">JOIN</a>
+      <button class="navbar__hamburger" id="nav-hamburger"
+              aria-label="Open menu" aria-expanded="false" aria-controls="nav-drawer">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Mobile drawer -->
+  <nav class="navbar__drawer" id="nav-drawer"
+       role="navigation" aria-label="Mobile navigation" aria-hidden="true">
+    <a href="#home"          class="navbar__link">HOME</a>
+    <a href="#architecture"  class="navbar__link">INFO</a>
+    <a href="#team"          class="navbar__link">SUPPORT</a>
+    <a href="#team"          class="navbar__link">PARTNERSHIP</a>
+    <a href="dashboard.html" class="navbar__link">PRODUCT</a>
+    <a href="dashboard.html" class="btn btn--outline" style="margin-top:1rem;">JOIN</a>
+  </nav>
+</header>
+
+<!-- ════════════════════════════════════════════════════════
+     HERO SECTION
+     ════════════════════════════════════════════════════════ -->
+<main id="home" data-section="Home">
+
+<section class="hero" aria-labelledby="hero-headline">
+
+  <div class="hero__inner">
+
+    <!-- ── Left: Content ──────────────────────────────── -->
+    <div class="hero__content">
+
+      <!-- Kicker / live indicator -->
+      <div class="hero__kicker" role="status" aria-label="Live telemetry system active">
+        <span class="hero__kicker-dot" aria-hidden="true"></span>
+        Bring F1 Fans Closer to Your Race Data
+      </div>
+
+      <!-- Main headline -->
+      <hgroup class="hero__headline">
+        <h1 id="hero-headline">
+          <span class="hero__headline-light">Predict the Pit Stop</span>
+          <span class="hero__headline-bold">
+            <span class="hero__headline-accent">Before</span> It Happens
+          </span>
+        </h1>
+      </hgroup>
+
+      <!-- Subtitle -->
+      <p class="hero__subtitle">
+        Simulated F1 cars stream 20 Hz sensor data directly to our cloud pipeline.
+        Our XGBoost model analyses tyre wear, brake temperatures, lap deltas, and
+        G-forces to predict pit stops up to 3 laps ahead — in real time.
+      </p>
+
+      <!-- CTAs -->
+      <div class="hero__ctas" role="group" aria-label="Primary actions">
+        <a href="dashboard.html" class="btn btn--dark" id="cta-dashboard">
+          <!-- Dashboard icon -->
+          <svg class="btn__icon" viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="3" y="3" width="7" height="7" rx="1"/>
+            <rect x="14" y="3" width="7" height="7" rx="1"/>
+            <rect x="3" y="14" width="7" height="7" rx="1"/>
+            <rect x="14" y="14" width="7" height="7" rx="1"/>
+          </svg>
+          View Live Dashboard
+        </a>
+        <a href="#architecture" class="btn btn--dark" id="cta-how">
+          <!-- Info icon -->
+          <svg class="btn__icon" viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="8" x2="12" y2="12"/>
+            <line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+          How It Works
+        </a>
+      </div>
+
+      <!-- Stats strip -->
+      <div class="hero__stats" role="list" aria-label="Project stats">
+        <div role="listitem">
+          <div class="hero__stat-value">20 Hz</div>
+          <div class="hero__stat-label">Sensor Rate</div>
+        </div>
+        <div role="listitem">
+          <div class="hero__stat-value">~83%</div>
+          <div class="hero__stat-label">Prediction Accuracy</div>
+        </div>
+        <div role="listitem">
+          <div class="hero__stat-value">&lt; 50 ms</div>
+          <div class="hero__stat-label">Latency</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Right: F1 Car Illustration ─────────────────── -->
+    <div class="hero__visual" aria-hidden="true">
+      <!-- Glow ring -->
+      <div class="hero__car-glow"></div>
+
+      <!-- Speed streaks (pure CSS animation) -->
+      <div class="hero__car-streaks">
+        <div class="hero__car-streak"></div>
+        <div class="hero__car-streak"></div>
+        <div class="hero__car-streak"></div>
+      </div>
+
+      <!-- Car image wrapper — swap src here to change the hero car photo -->
+      <div class="hero__car-wrap">
+        <img id="hero-car-img"
+             src="assets/car.jpg"
+             alt="Formula 1 race car, orange and black livery, angled top-front view"
+             width="620" height="413"
+             loading="eager"
+             decoding="async"/>
+      </div>
+    </div>
+  </div>
+
+  <!-- Vertical fade to next section -->
+  <div class="hero__fade" aria-hidden="true"></div>
+
+  <!-- Scroll-down arrow (bottom-left) -->
+  <a href="#dashboard-preview" class="scroll-arrow" aria-label="Scroll to dashboard preview">
+    <div class="scroll-arrow__line" aria-hidden="true"></div>
+    <span class="text-xs ls-wider">Scroll</span>
+  </a>
+
+  <!-- Our Story pill (bottom-right) -->
+  <a href="#team" class="hero__story-pill" aria-label="Go to Our Story section">
+    Our Story
+    <span class="hero__story-arrow" aria-hidden="true"></span>
+  </a>
+
+</section>
+
+<!-- ════════════════════════════════════════════════════════
+     SECTION 2: DASHBOARD PREVIEW
+     ════════════════════════════════════════════════════════ -->
+<section id="dashboard-preview" class="section" data-section="Dashboard" aria-labelledby="s2-title">
+  <div class="container">
+
+    <div class="reveal">
+      <p class="section__label" aria-hidden="true">Live Dashboard</p>
+      <h2 class="section__title" id="s2-title">
+        Everything You Need, at a Glance
+      </h2>
+      <p class="section__subtitle">
+        A live command centre for each car on track. Watch speed, RPM,
+        tyre wear, and brake temperature update in real time while our ML
+        model highlights when to call the car in.
+      </p>
+    </div>
+
+    <!-- Animated preview of the dashboard -->
+    <div class="dashboard-preview reveal" style="transition-delay: 150ms;" role="img"
+         aria-label="Dashboard preview showing live KPI cards and telemetry charts">
+      <div class="dashboard-preview__inner">
+        <!-- KPI mini-cards -->
+        <div class="preview-kpi">
+          <div class="preview-kpi__label">Speed</div>
+          <div class="preview-kpi__value">
+            <span id="preview-speed">287</span>
+            <span class="preview-kpi__unit">km/h</span>
+          </div>
+          <div class="preview-kpi__bar">
+            <div class="preview-kpi__bar-fill" id="preview-speed-bar" style="width:89%"></div>
+          </div>
+        </div>
+        <div class="preview-kpi">
+          <div class="preview-kpi__label">RPM</div>
+          <div class="preview-kpi__value">
+            <span id="preview-rpm">11.8k</span>
+          </div>
+          <div class="preview-kpi__bar">
+            <div class="preview-kpi__bar-fill" id="preview-rpm-bar" style="width:87%"></div>
+          </div>
+        </div>
+        <div class="preview-kpi">
+          <div class="preview-kpi__label">Throttle</div>
+          <div class="preview-kpi__value">
+            <span id="preview-throttle">98</span>
+            <span class="preview-kpi__unit">%</span>
+          </div>
+          <div class="preview-kpi__bar">
+            <div class="preview-kpi__bar-fill" id="preview-throttle-bar" style="width:98%"></div>
+          </div>
+        </div>
+        <div class="preview-kpi" style="border-color: rgba(245,158,11,0.3);">
+          <div class="preview-kpi__label">Tyre Wear</div>
+          <div class="preview-kpi__value" style="color: var(--clr-amber);">
+            <span id="preview-tirewear">41.7</span>
+            <span class="preview-kpi__unit">%</span>
+          </div>
+          <div class="preview-kpi__bar">
+            <div class="preview-kpi__bar-fill" id="preview-tirewear-bar" style="width:41%;background:var(--clr-amber)"></div>
+          </div>
+        </div>
+
+        <!-- Chart placeholders with SVG wave -->
+        <div class="preview-chart">
+          <div style="font-size:var(--text-xs);color:var(--clr-text-muted);font-weight:600;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:8px;">Speed (60 s)</div>
+          <svg class="preview-chart__wave" viewBox="0 0 300 80" preserveAspectRatio="none" aria-hidden="true">
+            <defs>
+              <linearGradient id="wave-grad-1" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#FF5A1F" stop-opacity="0.3"/>
+                <stop offset="100%" stop-color="#FF5A1F" stop-opacity="0"/>
+              </linearGradient>
+            </defs>
+            <path d="M0 60 C20 55,30 30,50 35 S70 25,90 20 S120 45,140 40 S170 15,200 25 S230 55,260 30 S280 40,300 25 L300 80 L0 80 Z"
+                  fill="url(#wave-grad-1)"/>
+            <path d="M0 60 C20 55,30 30,50 35 S70 25,90 20 S120 45,140 40 S170 15,200 25 S230 55,260 30 S280 40,300 25"
+                  fill="none" stroke="#FF5A1F" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </div>
+
+        <div class="preview-chart">
+          <div style="font-size:var(--text-xs);color:var(--clr-text-muted);font-weight:600;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:8px;">Brake Temp (60 s)</div>
+          <svg class="preview-chart__wave" viewBox="0 0 300 80" preserveAspectRatio="none" aria-hidden="true">
+            <defs>
+              <linearGradient id="wave-grad-2" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#3B82F6" stop-opacity="0.25"/>
+                <stop offset="100%" stop-color="#3B82F6" stop-opacity="0"/>
+              </linearGradient>
+            </defs>
+            <path d="M0 70 C30 65,40 20,70 25 S100 65,130 60 S160 30,200 35 S240 50,270 40 S285 55,300 50 L300 80 L0 80 Z"
+                  fill="url(#wave-grad-2)"/>
+            <path d="M0 70 C30 65,40 20,70 25 S100 65,130 60 S160 30,200 35 S240 50,270 40 S285 55,300 50"
+                  fill="none" stroke="#3B82F6" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Gradient overlay with CTA -->
+      <div class="dashboard-preview__overlay">
+        <a href="dashboard.html" class="btn btn--brand" id="preview-open-btn">
+          Open Live Dashboard →
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════
+     SECTION 3: ARCHITECTURE
+     ════════════════════════════════════════════════════════ -->
+<section id="architecture" class="section arch-section" data-section="Architecture" aria-labelledby="s3-title">
+  <div class="container">
+
+    <div class="reveal">
+      <p class="section__label" aria-hidden="true">System Design</p>
+      <h2 class="section__title" id="s3-title">End-to-End Architecture</h2>
+      <p class="section__subtitle">
+        From raw sensor packets to ML inference in under 50 ms.
+        A streaming pipeline purpose-built for high-frequency motorsport data.
+      </p>
+    </div>
+
+    <!-- Architecture diagram SVG -->
+    <div class="arch-diagram reveal" style="transition-delay:150ms;" role="img"
+         aria-label="Architecture diagram showing data flow from car simulator through Kafka, data cleaning pipeline, Cassandra storage, ML model, to the live dashboard">
+      <svg viewBox="0 0 860 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <defs>
+          <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 Z" fill="#FF5A1F" opacity="0.7"/>
+          </marker>
+          <linearGradient id="node-grad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#252529"/>
+            <stop offset="100%" stop-color="#1a1a1c"/>
+          </linearGradient>
+        </defs>
+
+        <!-- Connection lines (animated in JS via .arch-path class) -->
+        <line class="arch-path" x1="155" y1="100" x2="200" y2="100"
+              stroke="#FF5A1F" stroke-width="1.5" stroke-opacity="0.6"
+              marker-end="url(#arrow)" stroke-dasharray="4 3"/>
+        <line class="arch-path" x1="315" y1="100" x2="360" y2="100"
+              stroke="#FF5A1F" stroke-width="1.5" stroke-opacity="0.6"
+              marker-end="url(#arrow)" stroke-dasharray="4 3"/>
+        <line class="arch-path" x1="475" y1="100" x2="520" y2="100"
+              stroke="#FF5A1F" stroke-width="1.5" stroke-opacity="0.6"
+              marker-end="url(#arrow)" stroke-dasharray="4 3"/>
+        <line class="arch-path" x1="635" y1="100" x2="680" y2="100"
+              stroke="#FF5A1F" stroke-width="1.5" stroke-opacity="0.6"
+              marker-end="url(#arrow)" stroke-dasharray="4 3"/>
+
+        <!-- Node 1: Simulator -->
+        <g transform="translate(10,60)">
+          <rect width="145" height="80" rx="12" fill="url(#node-grad)" stroke="rgba(255,90,31,0.25)" stroke-width="1"/>
+          <text x="72" y="28" text-anchor="middle" fill="rgba(255,90,31,0.9)" font-size="20">🏎️</text>
+          <text x="72" y="50" text-anchor="middle" fill="#F5F5F7" font-size="12" font-weight="700" font-family="Plus Jakarta Sans, sans-serif">Simulator</text>
+          <text x="72" y="66" text-anchor="middle" fill="#71717A" font-size="10" font-family="Plus Jakarta Sans, sans-serif">20 Hz sensor data</text>
+        </g>
+
+        <!-- Node 2: Cleaning Pipeline -->
+        <g transform="translate(200,60)">
+          <rect width="115" height="80" rx="12" fill="url(#node-grad)" stroke="rgba(255,90,31,0.20)" stroke-width="1"/>
+          <text x="57" y="28" text-anchor="middle" fill="rgba(255,90,31,0.9)" font-size="20">🧹</text>
+          <text x="57" y="50" text-anchor="middle" fill="#F5F5F7" font-size="12" font-weight="700" font-family="Plus Jakarta Sans, sans-serif">Cleaning</text>
+          <text x="57" y="66" text-anchor="middle" fill="#71717A" font-size="10" font-family="Plus Jakarta Sans, sans-serif">Validate &amp; flag</text>
+        </g>
+
+        <!-- Node 3: Cassandra -->
+        <g transform="translate(360,60)">
+          <rect width="115" height="80" rx="12" fill="url(#node-grad)" stroke="rgba(255,90,31,0.20)" stroke-width="1"/>
+          <text x="57" y="28" text-anchor="middle" fill="rgba(255,90,31,0.9)" font-size="20">🗃️</text>
+          <text x="57" y="50" text-anchor="middle" fill="#F5F5F7" font-size="12" font-weight="700" font-family="Plus Jakarta Sans, sans-serif">Cassandra</text>
+          <text x="57" y="66" text-anchor="middle" fill="#71717A" font-size="10" font-family="Plus Jakarta Sans, sans-serif">Time-series store</text>
+        </g>
+
+        <!-- Node 4: ML Model -->
+        <g transform="translate(520,60)">
+          <rect width="115" height="80" rx="12" fill="url(#node-grad)" stroke="rgba(255,90,31,0.20)" stroke-width="1"/>
+          <text x="57" y="28" text-anchor="middle" fill="rgba(255,90,31,0.9)" font-size="20">🤖</text>
+          <text x="57" y="50" text-anchor="middle" fill="#F5F5F7" font-size="12" font-weight="700" font-family="Plus Jakarta Sans, sans-serif">XGBoost ML</text>
+          <text x="57" y="66" text-anchor="middle" fill="#71717A" font-size="10" font-family="Plus Jakarta Sans, sans-serif">Pit prediction</text>
+        </g>
+
+        <!-- Node 5: Dashboard -->
+        <g transform="translate(680,60)">
+          <rect width="160" height="80" rx="12" fill="url(#node-grad)" stroke="rgba(255,90,31,0.25)" stroke-width="1"/>
+          <text x="80" y="28" text-anchor="middle" fill="rgba(255,90,31,0.9)" font-size="20">📊</text>
+          <text x="80" y="50" text-anchor="middle" fill="#F5F5F7" font-size="12" font-weight="700" font-family="Plus Jakarta Sans, sans-serif">Live Dashboard</text>
+          <text x="80" y="66" text-anchor="middle" fill="#71717A" font-size="10" font-family="Plus Jakarta Sans, sans-serif">WebSocket + REST</text>
+        </g>
+
+        <!-- FastAPI label -->
+        <text x="415" y="175" text-anchor="middle" fill="rgba(255,90,31,0.5)"
+              font-size="11" font-family="Plus Jakarta Sans, sans-serif">
+          FastAPI · Cassandra Driver · XGBoost · WebSocket
+        </text>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════
+     SECTION 4: FEATURES (Why Cassandra, Data Cleaning, ML)
+     ════════════════════════════════════════════════════════ -->
+<section id="features" class="section" data-section="Features" aria-labelledby="s4-title">
+  <div class="container">
+
+    <div class="reveal">
+      <p class="section__label" aria-hidden="true">Technology</p>
+      <h2 class="section__title" id="s4-title">Built for Speed, at Every Layer</h2>
+    </div>
+
+    <div class="features-grid reveal-group">
+
+      <!-- Why Cassandra -->
+      <article class="feature-card">
+        <div class="feature-card__icon" aria-hidden="true">🗃️</div>
+        <h3 class="feature-card__title">Why Apache Cassandra?</h3>
+        <p class="feature-card__body">
+          At 20 Hz per car, a 20-car grid produces 400 writes per second.
+          Cassandra's wide-column, append-only model handles this without
+          write amplification. Queries by <code>(race_id, car_number, timestamp)</code>
+          map directly to partition keys, giving sub-millisecond reads for
+          the last 60 seconds of history.
+        </p>
+      </article>
+
+      <!-- Data Cleaning -->
+      <article class="feature-card">
+        <div class="feature-card__icon" aria-hidden="true">🧹</div>
+        <h3 class="feature-card__title">Real-Time Data Cleaning</h3>
+        <p class="feature-card__body">
+          Sensor noise, duplicates, and out-of-range values are flagged before
+          storage. Our pipeline uses Z-score validation on a rolling 5-second
+          window and deduplication by <code>sensor_timestamp</code>. The
+          <code>/quality</code> endpoint exposes quarantine rates per reason
+          so you can inspect health live on the dashboard.
+        </p>
+        <!-- Before/After example -->
+        <div style="margin-top:1rem;font-size:var(--text-xs);font-family:var(--font-mono);color:var(--clr-text-muted);">
+          <div style="color:var(--clr-red);margin-bottom:4px;">✗ speed_kmh: 9999  → quarantined (out_of_range)</div>
+          <div style="color:var(--clr-green);">✓ speed_kmh: 287.4 → stored, quality_flag: "ok"</div>
+        </div>
+      </article>
+
+      <!-- ML Predictions -->
+      <article class="feature-card">
+        <div class="feature-card__icon" aria-hidden="true">🤖</div>
+        <h3 class="feature-card__title">ML Predictions, Simply Explained</h3>
+        <p class="feature-card__body">
+          An XGBoost classifier is trained on historical F1 stint data.
+          Every second, it receives a feature vector of 60-second rolling
+          averages (tyre wear slope, brake temp trend, G-force variance)
+          and outputs a pit probability between 0 and 1.
+          Green &lt; 0.4 · Amber 0.4–0.7 · Red &gt; 0.7.
+        </p>
+        <div class="badge badge--brand" style="margin-top:1rem;">
+          Model: XGBoost v1.0 · Latency: ~12 ms
+        </div>
+      </article>
+
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════
+     SECTION 5: TEAM
+     ════════════════════════════════════════════════════════ -->
+<section id="team" class="section team-section" data-section="Team" aria-labelledby="s5-title">
+  <div class="container">
+
+    <div class="reveal">
+      <p class="section__label" aria-hidden="true">The Crew</p>
+      <h2 class="section__title" id="s5-title">Our Story</h2>
+      <p class="section__subtitle">
+        A university team passionate about motorsport data engineering.
+        We built this platform as our final-year project to explore
+        real-time streaming, distributed databases, and ML in production.
+      </p>
+    </div>
+
+    <div class="team-grid reveal-group">
+
+      <!-- Team members — replace avatars with real photos -->
+      <article class="team-card">
+        <div class="team-card__avatar" aria-hidden="true">
+          <!-- Inline SVG avatar placeholder -->
+          <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+            <rect width="80" height="80" fill="#1e1e21"/>
+            <circle cx="40" cy="30" r="16" fill="#3a3a3c"/>
+            <ellipse cx="40" cy="72" rx="28" ry="20" fill="#3a3a3c"/>
+          </svg>
+        </div>
+        <div class="team-card__name">Team Member 1</div>
+        <div class="team-card__role">Backend · FastAPI &amp; Cassandra</div>
+      </article>
+
+      <article class="team-card">
+        <div class="team-card__avatar" aria-hidden="true">
+          <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+            <rect width="80" height="80" fill="#1e1e21"/>
+            <circle cx="40" cy="30" r="16" fill="#3a3a3c"/>
+            <ellipse cx="40" cy="72" rx="28" ry="20" fill="#3a3a3c"/>
+          </svg>
+        </div>
+        <div class="team-card__name">Team Member 2</div>
+        <div class="team-card__role">ML · XGBoost &amp; Feature Eng.</div>
+      </article>
+
+      <article class="team-card">
+        <div class="team-card__avatar" aria-hidden="true">
+          <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+            <rect width="80" height="80" fill="#1e1e21"/>
+            <circle cx="40" cy="30" r="16" fill="#3a3a3c"/>
+            <ellipse cx="40" cy="72" rx="28" ry="20" fill="#3a3a3c"/>
+          </svg>
+        </div>
+        <div class="team-card__name">Team Member 3</div>
+        <div class="team-card__role">Frontend · Dashboard &amp; UI</div>
+      </article>
+
+      <article class="team-card">
+        <div class="team-card__avatar" aria-hidden="true">
+          <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+            <rect width="80" height="80" fill="#1e1e21"/>
+            <circle cx="40" cy="30" r="16" fill="#3a3a3c"/>
+            <ellipse cx="40" cy="72" rx="28" ry="20" fill="#3a3a3c"/>
+          </svg>
+        </div>
+        <div class="team-card__name">Team Member 4</div>
+        <div class="team-card__role">Data Pipeline &amp; DevOps</div>
+      </article>
+
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════
+     FOOTER
+     ════════════════════════════════════════════════════════ -->
+<footer class="footer" role="contentinfo">
+  <div class="container">
+    <div class="footer__inner">
+      <div class="footer__copy">
+        © 2026 F1Telemetry — University Project. Not affiliated with Formula 1 or FIA.
+      </div>
+      <nav class="footer__links" aria-label="Footer navigation">
+        <a href="#" class="footer__link">Privacy</a>
+        <a href="#" class="footer__link">Terms</a>
+        <a href="dashboard.html" class="footer__link">Dashboard</a>
+        <a href="#architecture" class="footer__link">Architecture</a>
+      </nav>
+    </div>
+  </div>
+</footer>
+
+</main>
+
+<!-- ── Vertical dot pagination nav ─────────────────────── -->
+<nav class="dot-nav" id="dot-nav" aria-label="Section navigation">
+  <!-- Dots injected by landing.js -->
+</nav>
+
+<!-- ── JS (ES module, deferred by default) ─────────────── -->
+<script type="module" src="js/landing.js"></script>
+
+</body>
+</html>

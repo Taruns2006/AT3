@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  F1 Telemetry — Logo Mark
+  "F1T" monogram: bold F1 letterform with an orange speed-slash accent
+  Replace this file or swap the <img src> in HTML to use your own asset
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" fill="none" role="img" aria-label="F1 Telemetry logo">
+  <defs>
+    <linearGradient id="lg-brand" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FF5A1F"/>
+      <stop offset="1" stop-color="#FF3D00"/>
+    </linearGradient>
+    <linearGradient id="lg-bg" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1e1e21"/>
+      <stop offset="1" stop-color="#141416"/>
+    </linearGradient>
+  </defs>
+  <!-- Background rounded square -->
+  <rect width="40" height="40" rx="10" fill="url(#lg-bg)"/>
+  <!-- Subtle border -->
+  <rect width="40" height="40" rx="10" fill="none" stroke="rgba(255,90,31,0.3)" stroke-width="1"/>
+  <!-- "F" letter -->
+  <path d="M 8 10 L 8 30 M 8 10 L 18 10 M 8 19 L 16 19" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- "1" letter  -->
+  <path d="M 22 13 L 25 10 L 25 30" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Speed slash accent in brand orange -->
+  <path d="M 29 10 L 33 20 L 29 30" stroke="url(#lg-brand)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

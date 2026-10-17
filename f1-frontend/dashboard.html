@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>F1 Telemetry — Live Dashboard</title>
+  <meta name="description" content="Real-time Formula 1 telemetry dashboard — speed, RPM, tyre wear, brake temperature, pit stop predictions, and race leaderboard."/>
+  <meta name="robots" content="noindex"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="css/variables.css"/>
+  <link rel="stylesheet" href="css/base.css"/>
+  <link rel="stylesheet" href="css/components.css"/>
+  <link rel="stylesheet" href="css/dashboard.css"/>
+</head>
+<body class="dashboard-body">
+
+<!-- ── Toast container ─────────────────────────────────── -->
+<div id="toast-container" aria-live="polite" aria-atomic="false"></div>
+
+<!-- ════════════════════════════════════════════════════════
+     TOP BAR
+     ════════════════════════════════════════════════════════ -->
+<header class="topbar" role="banner">
+
+  <!-- Logo -->
+  <a href="index.html" class="topbar__logo" aria-label="F1 Telemetry home">
+    <img src="assets/logo.svg" alt="F1T logo" class="topbar__logo-mark" width="28" height="28"/>
+    <span class="topbar__brand">F1<span>T</span></span>
+  </a>
+
+  <div class="topbar__divider" aria-hidden="true"></div>
+
+  <!-- Race + Car selectors -->
+  <div class="topbar__selects" role="group" aria-label="Race and car selection">
+    <div class="select-wrap">
+      <select id="race-select" aria-label="Select race">
+        <option value="">Loading races…</option>
+      </select>
+    </div>
+    <div class="select-wrap">
+      <select id="car-select" aria-label="Select car">
+        <option value="">Select race first</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Right cluster -->
+  <div class="topbar__right">
+    <!-- Connection status badge -->
+    <div id="status-badge" class="status-badge status-badge--mock" role="status" aria-live="polite">
+      <span class="status-badge__dot" aria-hidden="true"></span>
+      <span id="status-text">Mock</span>
+    </div>
+
+    <!-- Live clock -->
+    <time id="topbar-clock" class="topbar__time" datetime="" aria-label="Current time">--:--:--</time>
+
+    <!-- Back to landing -->
+    <a href="index.html" class="topbar__back" aria-label="Back to landing page">
+      ← Home
+    </a>
+  </div>
+</header>
+
+<!-- ════════════════════════════════════════════════════════
+     MAIN LAYOUT
+     ════════════════════════════════════════════════════════ -->
+<div class="dash-layout">
+  <main class="dash-main" id="dash-main" role="main" aria-label="Telemetry dashboard">
+
+    <!-- ── STALE WARNING (hidden until data goes stale) ─── -->
+    <div id="stale-warning" class="stale-warning" style="display:none;" role="alert" aria-live="assertive">
+      ⚠ No telemetry received for 3 s — data may be stale
+    </div>
+
+    <!-- ── KPI STRIP ─────────────────────────────────────── -->
+    <section aria-labelledby="kpi-heading">
+      <h2 id="kpi-heading" class="sr-only">Live Telemetry KPIs</h2>
+      <div class="kpi-strip" id="kpi-strip">
+        <!-- KPI cards injected by dashboard.js -->
+        <!-- Shown during load: -->
+        <div class="kpi-card">
+          <div class="kpi-card__label">Speed</div>
+          <div class="kpi-card__value skeleton" style="height:2rem;width:80%;"></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-card__label">RPM</div>
+          <div class="kpi-card__value skeleton" style="height:2rem;width:70%;"></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-card__label">Throttle</div>
+          <div class="kpi-card__value skeleton" style="height:2rem;width:60%;"></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-card__label">Tyre Wear</div>
+          <div class="kpi-card__value skeleton" style="height:2rem;width:75%;"></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-card__label">Tyre Temp</div>
+          <div class="kpi-card__value skeleton" style="height:2rem;width:65%;"></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-card__label">Brake Temp</div>
+          <div class="kpi-card__value skeleton" style="height:2rem;width:80%;"></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-card__label">G-Lat</div>
+          <div class="kpi-card__value skeleton" style="height:2rem;width:60%;"></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-card__label">Lap</div>
+          <div class="kpi-card__value skeleton" style="height:2rem;width:50%;"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── ROLLING CHARTS ────────────────────────────────── -->
+    <section aria-labelledby="charts-heading">
+      <h2 id="charts-heading" class="sr-only">Rolling Telemetry Charts (last 60 seconds)</h2>
+      <div class="charts-grid">
+
+        <div class="chart-panel">
+          <div class="chart-panel__header">
+            <span class="chart-panel__title">Speed (km/h)</span>
+          </div>
+          <div class="chart-panel__canvas-wrap">
+            <canvas id="chart-speed" role="img" aria-label="Speed over last 60 seconds"></canvas>
+          </div>
+        </div>
+
+        <div class="chart-panel">
+          <div class="chart-panel__header">
+            <span class="chart-panel__title">RPM</span>
+          </div>
+          <div class="chart-panel__canvas-wrap">
+            <canvas id="chart-rpm" role="img" aria-label="RPM over last 60 seconds"></canvas>
+          </div>
+        </div>
+
+        <div class="chart-panel">
+          <div class="chart-panel__header">
+            <span class="chart-panel__title">Brake Temp (°C)</span>
+          </div>
+          <div class="chart-panel__canvas-wrap">
+            <canvas id="chart-brake" role="img" aria-label="Brake temperature over last 60 seconds"></canvas>
+          </div>
+        </div>
+
+        <div class="chart-panel">
+          <div class="chart-panel__header">
+            <span class="chart-panel__title">Tyre Wear (%)</span>
+          </div>
+          <div class="chart-panel__canvas-wrap">
+            <canvas id="chart-tyre" role="img" aria-label="Tyre wear over last 60 seconds"></canvas>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ── BOTTOM GRID: Prediction | Leaderboard | Quality ─ -->
+    <section aria-labelledby="bottom-heading">
+      <h2 id="bottom-heading" class="sr-only">Prediction, Leaderboard, and Data Quality</h2>
+
+      <div class="bottom-grid">
+
+        <!-- Prediction Panel -->
+        <div class="pred-panel" id="pred-panel" role="region" aria-labelledby="pred-title" aria-live="polite">
+          <div class="pred-panel__header">
+            <span class="panel__title" id="pred-title">Pit Prediction</span>
+            <span class="badge badge--green" id="pred-conf-badge">—</span>
+          </div>
+
+          <div>
+            <div class="pred-verdict" id="pred-verdict">Awaiting data…</div>
+            <div class="pred-laps" id="pred-laps"></div>
+          </div>
+
+          <!-- Probability gauge -->
+          <div>
+            <div class="prob-gauge" id="prob-gauge" role="progressbar"
+                 aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"
+                 aria-label="Pit stop probability">
+              <div class="prob-gauge__fill" id="prob-gauge-fill" style="width:0%"></div>
+            </div>
+            <div class="prob-label">
+              <span>0%</span>
+              <span id="prob-pct">—</span>
+              <span>100%</span>
+            </div>
+          </div>
+
+          <!-- Pit window strip -->
+          <div class="pit-window">
+            <div class="pit-window__label">Stint progress to predicted pit</div>
+            <div class="pit-window__track" role="progressbar"
+                 aria-label="Stint progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+              <div class="pit-window__progress" id="pit-progress" style="width:0%"></div>
+              <div class="pit-window__marker" id="pit-marker" style="left:75%"></div>
+            </div>
+          </div>
+
+          <!-- Prediction history -->
+          <div>
+            <div class="panel__title" style="margin-bottom:var(--sp-2);">Recent Predictions</div>
+            <div class="pred-history" id="pred-history" aria-label="Prediction history">
+              <div class="pred-history__item">
+                <span class="pred-history__dot" style="background:var(--clr-text-muted)"></span>
+                <span style="color:var(--clr-text-muted)">Waiting for data…</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Leaderboard -->
+        <div class="leaderboard-panel" role="region" aria-labelledby="lb-title">
+          <div class="panel__title" id="lb-title">Race Leaderboard</div>
+          <div style="overflow-x:auto;">
+            <table class="lb-table" aria-label="Race leaderboard">
+              <thead>
+                <tr>
+                  <th scope="col">Pos</th>
+                  <th scope="col">Car</th>
+                  <th scope="col">Driver</th>
+                  <th scope="col">Laps</th>
+                  <th scope="col">Pits</th>
+                  <th scope="col">Pit Time</th>
+                </tr>
+              </thead>
+              <tbody id="lb-body">
+                <tr>
+                  <td colspan="6">
+                    <div class="state-overlay">
+                      <div class="spinner"></div>
+                      <div class="state-overlay__msg">Loading leaderboard…</div>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Data Quality Panel -->
+        <div class="quality-panel" role="region" aria-labelledby="quality-title">
+          <div class="panel__title" id="quality-title">Data Quality</div>
+
+          <div>
+            <div class="quality-stat">
+              <span class="quality-stat__label">Rows In</span>
+              <span class="quality-stat__value" id="q-rows-in">—</span>
+            </div>
+            <div class="quality-stat">
+              <span class="quality-stat__label">Rows Out</span>
+              <span class="quality-stat__value" id="q-rows-out">—</span>
+            </div>
+            <div class="quality-stat">
+              <span class="quality-stat__label">Quarantined</span>
+              <span class="quality-stat__value" id="q-quarantined" style="color:var(--clr-amber);">—</span>
+            </div>
+          </div>
+
+          <!-- Breakdown by reason -->
+          <div>
+            <div class="quality-stat__label" style="margin-bottom:var(--sp-3);">By Reason</div>
+            <div class="quality-reason" id="quality-reason">
+              <!-- Injected by dashboard.js -->
+              <div class="quality-reason__row">
+                <span class="quality-reason__name">—</span>
+                <div class="quality-reason__bar-wrap">
+                  <div class="quality-reason__bar-fill skeleton" style="width:40%"></div>
+                </div>
+                <span class="quality-reason__pct">—</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- G-Force Scatter (spans to fill) -->
+        <div class="gforce-panel" role="region" aria-labelledby="gforce-title">
+          <div class="panel__title" id="gforce-title">G–G Diagram</div>
+          <div class="gforce-panel__canvas-wrap">
+            <canvas id="chart-gforce" role="img" aria-label="G-force scatter plot: lateral vs longitudinal acceleration"></canvas>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- Chart.js CDN (pinned to v4.x) -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+
+<!-- Dashboard JS (loaded in Phase 4) -->
+<script type="module">
+  // Placeholder clock until dashboard.js is wired up in Phase 4
+  const clock = document.getElementById('topbar-clock');
+  function tickClock() {
+    const now = new Date();
+    clock.textContent = now.toLocaleTimeString('en-GB', { hour12: false });
+    clock.setAttribute('datetime', now.toISOString());
+  }
+  tickClock();
+  setInterval(tickClock, 1000);
+</script>
+
+</body>
+</html>
