@@ -102,23 +102,37 @@ def get_car(car_number=None, *args, **kwargs):
             return c
     return cars[0] if cars else {}
 
-# --- Comprehensive Telemetry Generator ---
+# --- Dynamic Time-Based Telemetry Engine ---
+
+# Advances 1 lap every 15 seconds smoothly across a 53-lap grand prix
+def get_current_race_state():
+    elapsed_seconds = int(time.time()) % 800
+    current_lap = min(53, (elapsed_seconds // 15) + 1)
+    
+    # Tyre wear increases dynamically with stint laps
+    stint_lap = (current_lap % 18)
+    tyre_wear = min(98.0, round((stint_lap * 5.2) + random.uniform(0.1, 1.2), 1))
+    
+    return current_lap, tyre_wear
 
 def generate_telemetry_tick(race_id="monza_2026", car_number=1):
-    speed_val = random.randint(285, 335)
-    throttle_val = round(random.uniform(75.0, 100.0), 1)
-    tyre_wear_val = round(random.uniform(12.0, 24.0), 1)
-    tyre_temp_val = round(random.uniform(92.0, 108.0), 1)
-    brake_temp_val = round(random.uniform(480.0, 680.0), 1)
-    g_lat_val = round(random.uniform(-3.5, 3.5), 2)
-    g_lon_val = round(random.uniform(-4.0, 2.5), 2)
+    current_lap, tyre_wear_val = get_current_race_state()
+    
+    speed_val = random.randint(288, 344)
+    throttle_val = round(random.uniform(82.0, 100.0), 1)
+    tyre_temp_val = round(random.uniform(94.0, 106.0), 1)
+    brake_temp_val = round(random.uniform(490.0, 670.0), 1)
+    
+    # Lateral & Longitudinal G-Forces for G-G Diagram plotting
+    g_lat_val = round(random.uniform(-3.8, 3.8), 2)
+    g_lon_val = round(random.uniform(-4.2, 2.2), 2)
 
     return {
         "race_id": race_id or "monza_2026",
         "car_number": int(car_number) if car_number else 1,
         "speed": speed_val,
         "speed_kmh": speed_val,
-        "rpm": random.randint(11800, 14600),
+        "rpm": random.randint(12000, 14800),
         "throttle": throttle_val,
         "throttle_pct": throttle_val,
         "tyre_wear": tyre_wear_val,
@@ -131,8 +145,8 @@ def generate_telemetry_tick(race_id="monza_2026", car_number=1):
         "lat_g": g_lat_val,
         "g_lon": g_lon_val,
         "lon_g": g_lon_val,
-        "lap": 14,
-        "current_lap": 14,
+        "lap": current_lap,
+        "current_lap": current_lap,
         "timestamp": int(time.time() * 1000)
     }
 
@@ -143,7 +157,6 @@ def get_latest_telemetry(race_id=None, car_number=None, *args, **kwargs):
             res = list(rows)
             if res:
                 d = dict(res[0]._asdict())
-                # Add aliases if missing
                 d.setdefault("speed_kmh", d.get("speed", 300))
                 d.setdefault("throttle_pct", d.get("throttle", 90))
                 d.setdefault("tyre_wear_pct", d.get("tyre_wear", 15))
@@ -184,6 +197,9 @@ def insert_telemetry(data, *args, **kwargs):
 # --- Leaderboard ---
 
 def get_leaderboard(race_id=None, *args, **kwargs):
+    current_lap, _ = get_current_race_state()
+    pits_count = max(1, current_lap // 18)
+    
     if session:
         try:
             rows = session.execute("SELECT * FROM race_telemetry LIMIT 50")
@@ -192,6 +208,7 @@ def get_leaderboard(race_id=None, *args, **kwargs):
                 return res
         except Exception:
             pass
+
     return [
         {
             "position": 1,
@@ -200,11 +217,11 @@ def get_leaderboard(race_id=None, *args, **kwargs):
             "car": 1,
             "driver": "Max Verstappen",
             "team": "Red Bull Racing",
-            "laps": 14,
-            "laps_completed": 14,
-            "pits": 1,
-            "pit_stops": 1,
-            "pit_time": "2.4s",
+            "laps": current_lap,
+            "laps_completed": current_lap,
+            "pits": pits_count,
+            "pit_stops": pits_count,
+            "pit_time": "2.3s",
             "gap": "0.000",
             "last_lap": "1:21.432"
         },
@@ -215,27 +232,76 @@ def get_leaderboard(race_id=None, *args, **kwargs):
             "car": 44,
             "driver": "Lewis Hamilton",
             "team": "Ferrari",
-            "laps": 14,
-            "laps_completed": 14,
-            "pits": 1,
-            "pit_stops": 1,
-            "pit_time": "2.6s",
+            "laps": current_lap,
+            "laps_completed": current_lap,
+            "pits": pits_count,
+            "pit_stops": pits_count,
+            "pit_time": "2.5s",
             "gap": "+1.240",
             "last_lap": "1:21.601"
         }
     ]
 
-# --- ML & Predictions ---
+# --- Dynamic ML & Pitstop Predictions ---
 
 def get_prediction(race_id=None, car_number=None, *args, **kwargs):
+    current_lap, tyre_wear = get_current_race_state()
+    
+    # Dynamic pit window calculation based on live tyre degradation
+    predicted_pit_lap = ((current_lap // 18) + 1) * 18
+    laps_remaining = max(1, predicted_pit_lap - current_lap)
+    
+    if tyre_wear > 72.0:
+        action = "BOX THIS LAP — PIT WINDOW OPEN"
+        recommended_tyre = "HARD"
+        confidence = 0.96
+    else:
+        action = "STAY OUT — TYRES NOMINAL"
+        recommended_tyre = "MEDIUM"
+        confidence = 0.89
+
+    stint_pct = min(100, int((tyre_wear / 80.0) * 100))
+
     return {
         "car_number": int(car_number) if car_number else 1,
-        "predicted_pit_lap": 22,
-        "confidence": 0.91,
-        "confidence_pct": 91,
-        "recommended_tyre": "HARD",
-        "action": "STAY OUT — TYRES NOMINAL",
-        "stint_progress": 65
+        "predicted_pit_lap": predicted_pit_lap,
+        "pit_window": f"~{laps_remaining} laps remaining",
+        "laps_remaining": laps_remaining,
+        "confidence": confidence,
+        "confidence_pct": int(confidence * 100),
+        "recommended_tyre": recommended_tyre,
+        "action": action,
+        "recommendation": action,
+        "stint_progress": stint_pct,
+        "recent_predictions": [
+            {
+                "action": "STAY OUT",
+                "type": "STAY",
+                "confidence": 89,
+                "confidence_pct": 89,
+                "pct": 89,
+                "text": "STAY OUT (89%)",
+                "label": "STAY OUT (89%)"
+            },
+            {
+                "action": "STAY OUT",
+                "type": "STAY",
+                "confidence": 88,
+                "confidence_pct": 88,
+                "pct": 88,
+                "text": "STAY OUT (88%)",
+                "label": "STAY OUT (88%)"
+            },
+            {
+                "action": "STAY OUT",
+                "type": "STAY",
+                "confidence": 86,
+                "confidence_pct": 86,
+                "pct": 86,
+                "text": "STAY OUT (86%)",
+                "label": "STAY OUT (86%)"
+            }
+        ]
     }
 
 def get_predictions(race_id=None, car_number=None, *args, **kwargs):
@@ -254,7 +320,11 @@ def get_quality(race_id=None, *args, **kwargs):
         "rows_in": 15420,
         "rows_out": 15400,
         "quarantined": 20,
-        "reasons": {"schema_mismatch": 12, "out_of_bounds": 8}
+        "reasons": {"schema_mismatch": 12, "out_of_bounds": 8},
+        "by_reason": [
+            {"reason": "Schema Mismatch", "count": 12},
+            {"reason": "Out of Bounds", "count": 8}
+        ]
     }
 
 def get_quality_metrics(race_id=None, *args, **kwargs):
