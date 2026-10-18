@@ -102,20 +102,37 @@ def get_car(car_number=None, *args, **kwargs):
             return c
     return cars[0] if cars else {}
 
-# --- Telemetry Routes ---
+# --- Comprehensive Telemetry Generator ---
 
 def generate_telemetry_tick(race_id="monza_2026", car_number=1):
+    speed_val = random.randint(285, 335)
+    throttle_val = round(random.uniform(75.0, 100.0), 1)
+    tyre_wear_val = round(random.uniform(12.0, 24.0), 1)
+    tyre_temp_val = round(random.uniform(92.0, 108.0), 1)
+    brake_temp_val = round(random.uniform(480.0, 680.0), 1)
+    g_lat_val = round(random.uniform(-3.5, 3.5), 2)
+    g_lon_val = round(random.uniform(-4.0, 2.5), 2)
+
     return {
         "race_id": race_id or "monza_2026",
         "car_number": int(car_number) if car_number else 1,
-        "speed": random.randint(285, 342),
-        "rpm": random.randint(11500, 14800),
-        "throttle": round(random.uniform(0.85, 1.0), 2),
-        "tyre_wear": round(random.uniform(12.0, 28.0), 1),
-        "tyre_temp": round(random.uniform(92.0, 108.0), 1),
-        "brake_temp": round(random.uniform(480.0, 680.0), 1),
-        "g_lat": round(random.uniform(1.8, 4.5), 2),
+        "speed": speed_val,
+        "speed_kmh": speed_val,
+        "rpm": random.randint(11800, 14600),
+        "throttle": throttle_val,
+        "throttle_pct": throttle_val,
+        "tyre_wear": tyre_wear_val,
+        "tyre_wear_pct": tyre_wear_val,
+        "tyre_temp": tyre_temp_val,
+        "tyre_temp_c": tyre_temp_val,
+        "brake_temp": brake_temp_val,
+        "brake_temp_c": brake_temp_val,
+        "g_lat": g_lat_val,
+        "lat_g": g_lat_val,
+        "g_lon": g_lon_val,
+        "lon_g": g_lon_val,
         "lap": 14,
+        "current_lap": 14,
         "timestamp": int(time.time() * 1000)
     }
 
@@ -125,7 +142,16 @@ def get_latest_telemetry(race_id=None, car_number=None, *args, **kwargs):
             rows = session.execute("SELECT * FROM race_telemetry LIMIT 1")
             res = list(rows)
             if res:
-                return dict(res[0]._asdict())
+                d = dict(res[0]._asdict())
+                # Add aliases if missing
+                d.setdefault("speed_kmh", d.get("speed", 300))
+                d.setdefault("throttle_pct", d.get("throttle", 90))
+                d.setdefault("tyre_wear_pct", d.get("tyre_wear", 15))
+                d.setdefault("tyre_temp_c", d.get("tyre_temp", 98))
+                d.setdefault("brake_temp_c", d.get("brake_temp", 520))
+                d.setdefault("lat_g", d.get("g_lat", 2.1))
+                d.setdefault("lon_g", d.get("g_lon", 1.2))
+                return d
         except Exception:
             pass
     return generate_telemetry_tick(race_id, car_number)
@@ -167,8 +193,36 @@ def get_leaderboard(race_id=None, *args, **kwargs):
         except Exception:
             pass
     return [
-        {"position": 1, "car_number": 1, "driver": "Max Verstappen", "gap": "0.000", "last_lap": "1:21.432"},
-        {"position": 2, "car_number": 44, "driver": "Lewis Hamilton", "gap": "+1.240", "last_lap": "1:21.601"}
+        {
+            "position": 1,
+            "pos": 1,
+            "car_number": 1,
+            "car": 1,
+            "driver": "Max Verstappen",
+            "team": "Red Bull Racing",
+            "laps": 14,
+            "laps_completed": 14,
+            "pits": 1,
+            "pit_stops": 1,
+            "pit_time": "2.4s",
+            "gap": "0.000",
+            "last_lap": "1:21.432"
+        },
+        {
+            "position": 2,
+            "pos": 2,
+            "car_number": 44,
+            "car": 44,
+            "driver": "Lewis Hamilton",
+            "team": "Ferrari",
+            "laps": 14,
+            "laps_completed": 14,
+            "pits": 1,
+            "pit_stops": 1,
+            "pit_time": "2.6s",
+            "gap": "+1.240",
+            "last_lap": "1:21.601"
+        }
     ]
 
 # --- ML & Predictions ---
@@ -178,7 +232,10 @@ def get_prediction(race_id=None, car_number=None, *args, **kwargs):
         "car_number": int(car_number) if car_number else 1,
         "predicted_pit_lap": 22,
         "confidence": 0.91,
-        "recommended_tyre": "HARD"
+        "confidence_pct": 91,
+        "recommended_tyre": "HARD",
+        "action": "STAY OUT — TYRES NOMINAL",
+        "stint_progress": 65
     }
 
 def get_predictions(race_id=None, car_number=None, *args, **kwargs):
@@ -187,10 +244,18 @@ def get_predictions(race_id=None, car_number=None, *args, **kwargs):
 def insert_prediction(data, *args, **kwargs):
     return True
 
-# --- Quality Metrics & Pipeline ---
+# --- Data Quality Metrics ---
 
 def get_quality(race_id=None, *args, **kwargs):
-    return {"status": "ok", "quality_score": 99.2, "latency_ms": 14}
+    return {
+        "status": "ok",
+        "quality_score": 99.2,
+        "latency_ms": 14,
+        "rows_in": 15420,
+        "rows_out": 15400,
+        "quarantined": 20,
+        "reasons": {"schema_mismatch": 12, "out_of_bounds": 8}
+    }
 
 def get_quality_metrics(race_id=None, *args, **kwargs):
     return get_quality(race_id, *args, **kwargs)
