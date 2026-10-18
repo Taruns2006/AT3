@@ -2,7 +2,7 @@ import os
 from cassandra.cluster import Cluster
 from cassandra.auth import PlainTextAuthProvider
 
-# Force the driver to use standard asyncio instead of the removed asyncore module
+# Force the driver to use standard asyncio for modern Python compatibility
 from cassandra.io.asyncioreactor import AsyncioConnection
 import cassandra.io
 cassandra.io.default_connection_class = AsyncioConnection
@@ -15,3 +15,12 @@ auth_provider = PlainTextAuthProvider('token', os.getenv('ASTRA_TOKEN'))
 
 cluster = Cluster(cloud=cloud_config, auth_provider=auth_provider)
 session = cluster.connect(os.getenv('ASTRA_KEYSPACE', 'f1_telemetry_system'))
+
+# Required helper function for health check routes
+def get_health():
+    try:
+        # Simple query to verify database connectivity
+        session.execute("SELECT now() from system.local")
+        return {"status": "healthy", "database": "connected"}
+    except Exception as e:
+        return {"status": "unhealthy", "error": str(e)}
