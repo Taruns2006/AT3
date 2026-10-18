@@ -52,7 +52,14 @@ def get_races(*args, **kwargs):
             return res
     except Exception:
         pass
-    return [{"race_id": "monza_2026", "name": "Italian Grand Prix", "status": "live"}]
+    return [{
+        "race_id": "monza_2026",
+        "name": "Italian Grand Prix",
+        "year": 2026,
+        "circuit": "Monza",
+        "status": "live",
+        "laps_total": 53
+    }]
 
 def get_race(race_id=None, *args, **kwargs):
     races = get_races()
@@ -76,8 +83,10 @@ def get_cars(race_id=None, *args, **kwargs):
             return res
     except Exception:
         pass
-    return [{"car_number": 1, "driver": "Verstappen"}, {"car_number": 44, "driver": "Hamilton"}]
-
+    return [
+        {"race_id": "monza_2026", "car_number": 1, "driver": "Max Verstappen", "team": "Red Bull Racing"},
+        {"race_id": "monza_2026", "car_number": 44, "driver": "Lewis Hamilton", "team": "Ferrari"}
+    ]
 def get_car(car_number=None, *args, **kwargs):
     cars = get_cars()
     for c in cars:
