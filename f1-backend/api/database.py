@@ -32,6 +32,9 @@ def get_leaderboard(race_id=None):
     except Exception:
         return []
 
+def get_prediction(race_id=None):
+    return []
+
 def get_predictions(race_id=None):
     return []
 
