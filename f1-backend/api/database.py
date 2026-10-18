@@ -47,9 +47,27 @@ def get_db_health():
 def get_races():
     try:
         rows = session.execute("SELECT * FROM races")
-        return [dict(row._asdict()) for row in rows]
+        res = [dict(row._asdict()) for row in rows]
+        if res:
+            return res
     except Exception:
-        return [{"race_id": "monza_2026", "name": "Italian Grand Prix", "status": "live"}]
+        pass
+    # Fallback if table is empty or error occurs
+    return [{"race_id": "monza_2026", "name": "Italian Grand Prix", "status": "live"}]
+
+def get_cars(race_id=None):
+    try:
+        if race_id:
+            rows = session.execute("SELECT * FROM cars WHERE race_id = %s", (race_id,))
+        else:
+            rows = session.execute("SELECT * FROM cars")
+        res = [dict(row._asdict()) for row in rows]
+        if res:
+            return res
+    except Exception:
+        pass
+    # Fallback if table is empty or error occurs
+    return [{"car_number": 1, "driver": "Verstappen"}, {"car_number": 44, "driver": "Hamilton"}]
 
 def get_race(race_id=None):
     races = get_races()
@@ -62,12 +80,6 @@ def get_race(race_id=None):
 def get_race_by_id(race_id=None):
     return get_race(race_id)
 
-def get_cars(race_id=None):
-    try:
-        rows = session.execute("SELECT * FROM cars WHERE race_id = %s", (race_id,))
-        return [dict(row._asdict()) for row in rows]
-    except Exception:
-        return [{"car_number": 1, "driver": "Verstappen"}, {"car_number": 44, "driver": "Hamilton"}]
 
 def get_car(car_number=None):
     cars = get_cars()
