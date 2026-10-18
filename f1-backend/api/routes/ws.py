@@ -2,29 +2,26 @@ import asyncio
 import random
 import time
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
-from api import database
 
 router = APIRouter()
 
-# Global race state for live WebSocket streaming
+# Global race state for continuous live ticking
 state = {
     "lap": 1,
     "last_update": time.time(),
-    "stint_lap": 1
 }
 
-def get_live_tick(race_id="monza_2026", car_number=1):
+def get_live_tick(race_id="monza_2026", car_number="1"):
     now = time.time()
     # Advance lap every 10 seconds
     if now - state["last_update"] > 10:
         state["lap"] = (state["lap"] % 53) + 1
-        state["stint_lap"] = ((state["lap"] - 1) % 18) + 1
         state["last_update"] = now
 
     current_lap = state["lap"]
-    stint_lap = state["stint_lap"]
+    stint_lap = ((current_lap - 1) % 18) + 1
     
-    # Tyre wear increases gradually with lap count
+    # Tyre wear increases steadily with lap progression
     tyre_wear = min(98.5, round((stint_lap * 5.1) + random.uniform(0.1, 0.8), 1))
     tyre_temp = round(random.uniform(94.0, 107.0), 1)
     brake_temp = round(random.uniform(490.0, 680.0), 1)
@@ -33,11 +30,9 @@ def get_live_tick(race_id="monza_2026", car_number=1):
     rpm_val = random.randint(11900, 14750)
     throttle_val = round(random.uniform(80.0, 100.0), 1)
     
-    # Lateral & Longitudinal G-Forces for G-G Diagram
     g_lat_val = round(random.uniform(-3.6, 3.6), 2)
     g_lon_val = round(random.uniform(-4.1, 2.3), 2)
 
-    # Pitstop Prediction logic
     predicted_pit_lap = (((current_lap - 1) // 18) + 1) * 18
     laps_remaining = max(1, predicted_pit_lap - current_lap)
     
@@ -52,13 +47,17 @@ def get_live_tick(race_id="monza_2026", car_number=1):
 
     stint_pct = min(100, int((tyre_wear / 80.0) * 100))
 
-    # Comprehensive payload supplying all key formats expected by dashboard.js
+    try:
+        clean_car_num = int(''.join(filter(str.isdigit, str(car_number)))) if car_number else 1
+    except ValueError:
+        clean_car_num = 1
+
     return {
-        "race_id": race_id,
-        "car_number": int(car_number) if car_number else 1,
+        "race_id": str(race_id or "monza_2026"),
+        "car_number": clean_car_num,
         "timestamp": int(time.time() * 1000),
         
-        # Telemetry metrics (dual keys for camelCase and snake_case compatibility)
+        # Telemetry metrics
         "speed": speed_val,
         "speed_kmh": speed_val,
         "speedKmh": speed_val,
@@ -96,7 +95,7 @@ def get_live_tick(race_id="monza_2026", car_number=1):
         "currentLap": current_lap,
         "lap_number": current_lap,
         
-        # Embedded prediction data for live widget updates
+        # Embedded prediction data
         "prediction": {
             "action": action,
             "recommendation": action,
@@ -113,7 +112,7 @@ def get_live_tick(race_id="monza_2026", car_number=1):
             ]
         },
         
-        # Embedded quality metrics
+        # Data Quality
         "quality": {
             "status": "ok",
             "quality_score": 99.2,
@@ -129,14 +128,18 @@ def get_live_tick(race_id="monza_2026", car_number=1):
     }
 
 @router.websocket("/ws/telemetry")
-async def websocket_telemetry(websocket: WebSocket, race_id: str = "monza_2026", car_number: int = 1):
+async def websocket_telemetry(websocket: WebSocket):
     await websocket.accept()
+    query_params = dict(websocket.query_params)
+    race_id = query_params.get("race_id", "monza_2026")
+    car_number = query_params.get("car_number", "1")
+    
     try:
         while True:
             data = get_live_tick(race_id, car_number)
             await websocket.send_json(data)
-            await asyncio.sleep(0.5)  # Send tick every 500ms
+            await asyncio.sleep(0.5)
     except WebSocketDisconnect:
         pass
     except Exception as e:
-        print(f"WebSocket error: {e}")
+        print(f"WebSocket streaming error: {e}")
